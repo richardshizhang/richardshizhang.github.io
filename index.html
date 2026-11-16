@@ -13,9 +13,6 @@
 <script>
 // Here in the head so the preloader and the time-of-day palette are right on first paint.
 document.documentElement.classList.add("js");
-try {
-  if (sessionStorage.getItem("rsz-loaded")) document.documentElement.classList.add("seen");
-} catch (e) { /* no storage: show the preloader every time */ }
 
 // Sky follows the visitor's own clock. ?time=day|dusk|night forces one.
 function sceneTime() {
@@ -125,9 +122,9 @@ html:has(.site.night) { background: #141618; color-scheme: dark; }
 .tk-pause, .track.sing .tk-play { display: none; }
 .track.sing .tk-pause { display: flex; }
 
-/* Preloader: the 时 stroke-order board. Only with JS, once per visit. */
+/* Preloader: the 时 stroke-order board. Only with JS, on every page load. */
 .loader { position: fixed; inset: 0; z-index: 100; transition: opacity .5s ease, visibility .5s; }
-html:not(.js) .loader, html.seen .loader { display: none !important; }
+html:not(.js) .loader { display: none !important; }
 .loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
 html.loading { overflow: hidden; }
 .loader a { color: #A32A22; }
@@ -741,7 +738,6 @@ var TRACKS = [
   var loader = document.getElementById("loader");
   var site = document.getElementById("site");
   if (!loader) return;
-  if (root.classList.contains("seen")) { loader.remove(); return; }
 
   // The 时 strokes start drawing on the first painted frame, and the last one lands about 4.0 s in.
   // Both clocks start at that frame: MIN_MS gives the finished character a beat before the fade,
@@ -756,7 +752,6 @@ var TRACKS = [
     loader.classList.add("done");
     root.classList.remove("loading");
     site.inert = false;
-    try { sessionStorage.setItem("rsz-loaded", "1"); } catch (e) { /* fine */ }
     setTimeout(function () { loader.remove(); }, 600);
   }
   function maybeClose() {
