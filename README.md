@@ -17,7 +17,7 @@ Then open http://localhost:8642.
 | Part | What it does |
 | --- | --- |
 | Sky colours | Follows the visitor's own clock: day 7am–5pm, dusk 5–7am and 5–8pm, night otherwise. Add `?time=day`, `?time=dusk` or `?time=night` to the address to force one. |
-| Loading screen | The 时 stroke-order board with the leaping mullet. Shows on every page load and stays until 时 is fully drawn (about 4 s) and the page has loaded, but never more than 6 s. "Enter →" skips it. The timings are `MIN_MS` and `MAX_MS` near the bottom of index.html. |
+| Loading screen | The 时 stroke-order board with a mullet that hops, lands on its side, then leaps again and flops onto its back. Shows on every page load and stays until 时 is fully drawn (about 4 s) and the page has loaded, but never more than 6 s. "Enter →" skips it. The timings are `MIN_MS` and `MAX_MS` near the bottom of index.html. |
 | Music | The swallows on the staff and the track list share one player. The `TRACKS` list near the bottom of index.html has to stay in the same order as the swallows and the track rows. |
 | Footer clocks | Bay Area and China time, plus approximate sunrise and sunset for Hong Kong, Beijing and Changchun. They refresh every 30 seconds. |
 | Visit counts | Cookie-free counts from [GoatCounter](https://richardshizhang.goatcounter.com). |
