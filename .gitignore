@@ -1,0 +1,4 @@
+.DS_Store
+
+# Original photo, video and audio exports (207 MB, local only). The site uses the copies in assets/.
+/RawAssets/
