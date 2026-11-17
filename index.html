@@ -58,6 +58,10 @@ function setSceneTime(site) {
 .sky{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}
 .fly{position:absolute;left:0;top:0;height:auto;offset-rotate:auto;offset-distance:100%;animation:pass linear infinite}
 .fly.back{transform:scaleY(-1)}
+/* Wingbeats: the sprite holds five poses side by side (glide, three steps of the downstroke,
+   wings flung up). Stepping object-position shows one at a time: two quick beats, then a glide. */
+.fly .flap{display:block;width:100%;height:auto;aspect-ratio:6/5;object-fit:cover;object-position:0 0;animation:flap 3.2s step-end infinite}
+@keyframes flap{0%{object-position:0 0}4%{object-position:25% 0}7%{object-position:50% 0}10%{object-position:75% 0}13%{object-position:50% 0}16%{object-position:25% 0}19%{object-position:100% 0}22%{object-position:0 0}26%{object-position:25% 0}29%{object-position:50% 0}32%{object-position:75% 0}35%{object-position:50% 0}38%{object-position:25% 0}41%{object-position:100% 0}44%,100%{object-position:0 0}}
 .swim{position:absolute;left:0;top:0;offset-rotate:auto;offset-distance:40%;animation-name:along,dive;animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite}
 .swim.rise{animation-name:along,rise}
 .swim img{display:block;height:auto}
@@ -103,7 +107,7 @@ function setSceneTime(site) {
 .scene{position:relative;height:340px;display:block}
 }
 @media (prefers-reduced-motion:reduce){
-.drift,.swim,.route,.bankA,.bankB,.wisp,.wispR,.voyage,.bob,.oar,.rip{animation:none}
+.drift,.swim,.route,.bankA,.bankB,.wisp,.wispR,.voyage,.bob,.oar,.rip,.flap{animation:none}
 .rip{opacity:0}
 .mullet{display:none}
 .sky{display:none}
@@ -617,12 +621,12 @@ html.loading { overflow: hidden; }
 <p style="position: relative; margin: 0; padding: 16px clamp(20px, 5.5vw, 80px) 28px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2)">Updated fall 2026, week 12</p>
 </footer>
 <div class="sky" aria-hidden="true">
-<img class="fly inkdark" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 110px; offset-path: path('M -160 560 C 300 520, 600 300, 900 260 S 1500 200, 2600 60'); animation-duration: 46s; animation-delay: -1s">
-<img class="fly inkdark back" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 56px; offset-path: path('M 2600 170 C 1600 250, 1000 110, 500 190 S -100 290, -240 250'); animation-duration: 39s; animation-delay: -24s">
-<img class="fly inkdark back" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 82px; offset-path: path('M 2600 900 C 1600 1000, 1100 1200, 700 1150 S 200 1000, -240 1100'); animation-duration: 58s; animation-delay: -27s">
-<img class="fly inkdark back" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 66px; offset-path: path('M 2600 940 C 1600 1040, 1100 1240, 700 1190 S 200 1040, -240 1140'); animation-duration: 58s; animation-delay: -26.4s">
-<img class="fly inkdark" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 92px; offset-path: path('M -160 2100 C 400 2000, 800 1700, 1200 1650 S 1900 1500, 2600 1400'); animation-duration: 71s; animation-delay: -52s">
-<img class="fly inkdark back" src="assets/img/swallow-flying-ink.webp" alt="" style="width: 100px; offset-path: path('M 2600 2300 C 1800 2500, 1200 2800, 700 2700 S 100 2500, -240 2600'); animation-duration: 84s; animation-delay: -70s">
+<div class="fly" style="width: 110px; offset-path: path('M -160 560 C 300 520, 600 300, 900 260 S 1500 200, 2600 60'); animation-duration: 46s; animation-delay: -1s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 3.2s; animation-delay: -0.4s"></div>
+<div class="fly back" style="width: 56px; offset-path: path('M 2600 170 C 1600 250, 1000 110, 500 190 S -100 290, -240 250'); animation-duration: 39s; animation-delay: -24s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 2.8s; animation-delay: -1.7s"></div>
+<div class="fly back" style="width: 82px; offset-path: path('M 2600 900 C 1600 1000, 1100 1200, 700 1150 S 200 1000, -240 1100'); animation-duration: 58s; animation-delay: -27s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 3.6s; animation-delay: -2.3s"></div>
+<div class="fly back" style="width: 66px; offset-path: path('M 2600 940 C 1600 1040, 1100 1240, 700 1190 S 200 1040, -240 1140'); animation-duration: 58s; animation-delay: -26.4s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 3.0s; animation-delay: -0.9s"></div>
+<div class="fly" style="width: 92px; offset-path: path('M -160 2100 C 400 2000, 800 1700, 1200 1650 S 1900 1500, 2600 1400'); animation-duration: 71s; animation-delay: -52s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 3.4s; animation-delay: -2.8s"></div>
+<div class="fly back" style="width: 100px; offset-path: path('M 2600 2300 C 1800 2500, 1200 2800, 700 2700 S 100 2500, -240 2600'); animation-duration: 84s; animation-delay: -70s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 2.9s; animation-delay: -1.2s"></div>
 </div>
 </div>
 
