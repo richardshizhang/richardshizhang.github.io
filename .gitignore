@@ -2,3 +2,7 @@
 
 # Original photo, video and audio exports (207 MB, local only). The site uses the copies in assets/.
 /RawAssets/
+
+# Claude notes and the shared handoff log (local only, never published)
+CLAUDE.md
+/.handoff/
