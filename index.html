@@ -180,6 +180,48 @@ html.loading { overflow: hidden; }
   .w0, .w1, .w2, .w3, .w4, .w5, .w6, .go .w0, .go .w1, .go .w2, .go .w3, .go .w4, .go .w5, .go .w6 { animation: none; stroke-dashoffset: 0; opacity: 1; }
   .loader { transition: none; }
 }
+
+/* ---------- Music player ----------
+   The card under the staff shows the piece as an ink stroke: thick where it's loud, red as far as you've listened.
+   When the card scrolls out of view while a piece is loaded, the same controls dock in the corner
+   (a bar along the bottom on phones). The script builds both from the same markup. */
+.vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.player { display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: "toggle title" "wave wave" "times times"; align-items: center; gap: 12px 14px; padding: 16px 18px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); }
+.player:empty { display: none; }
+.pl-toggle { grid-area: toggle; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--redtext); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.pl-toggle:hover { border-color: var(--redtext); }
+.player.sing .pl-toggle { background: var(--red); border-color: var(--red); color: #F6F1E7; }
+.pl-pause, .player.sing .pl-play { display: none; }
+.player.sing .pl-pause { display: block; }
+.pl-title { grid-area: title; margin: 0; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.pl-name, .pl-note { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pl-name { font-weight: 500; }
+.site a.pl-name:hover { color: var(--redtext); }
+.pl-note { font-size: 13px; color: var(--ink2); }
+.pl-note:empty { display: none; }
+.pl-wave { grid-area: wave; position: relative; height: 64px; cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; border-radius: 4px; }
+.pl-wave:focus-visible { outline: 2px solid var(--redtext); outline-offset: 4px; }
+.pl-wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pl-tip { position: absolute; bottom: 100%; margin-bottom: 4px; transform: translateX(-50%); padding: 1px 6px; border-radius: 4px; background: var(--ink); color: var(--paper); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.pl-tip[hidden] { display: none; }
+.pl-times { grid-area: times; margin: 0; display: flex; justify-content: space-between; font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.pl-at { color: var(--ink); }
+.pl-close { grid-area: close; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.pl-close:hover { color: var(--redtext); }
+.dock { position: fixed; right: 20px; bottom: 20px; z-index: 8; width: min(380px, calc(100vw - 40px)); box-sizing: border-box; grid-template-columns: 40px minmax(0, 1fr) auto 44px; grid-template-areas: "toggle title times close" "wave wave wave wave"; gap: 8px 10px; padding: 10px 6px 12px 12px; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 10px 28px rgba(0,0,0,.16); opacity: 0; visibility: hidden; transform: translateY(14px); transition: opacity .2s, transform .2s, visibility 0s .2s; }
+.dock.on { opacity: 1; visibility: visible; transform: none; transition: opacity .2s, transform .2s; }
+.dock .pl-toggle { width: 40px; height: 40px; }
+.dock .pl-wave { height: 36px; margin-right: 6px; }
+.dock .pl-times { display: block; }
+.dock .pl-dur::before { content: " / "; }
+html.dock-on footer { padding-bottom: 132px; }
+@media (max-width: 820px) {
+  .player { padding: 14px 14px 10px; }
+  .dock { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); width: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock, .dock.on { transition: none; transform: none; }
+}
 </style>
 </head>
 <body>
@@ -418,7 +460,9 @@ html.loading { overflow: hidden; }
 <button type="button" class="bird" data-track="7" aria-label="Play Networking" aria-pressed="false" style="left: 85.77%; top: 22.3%"><img loading="lazy" decoding="async" src="assets/img/swallow-perched-ink.webp" alt="" class="inkdark" style="width: 100%; height: auto; display: block; transform: none"></button>
 
 </div>
-<p id="now-playing" aria-live="polite" style="margin: 0; color: var(--ink2)">Tap a swallow on the staff, or press play on a piece below.</p>
+<div class="player" id="player"></div>
+<p style="margin: 0; color: var(--ink2)">Tap a swallow on the staff, or press play on a piece below.</p>
+<p id="now-playing" class="vh" aria-live="polite"></p>
 <h3 style="margin: 8px 0 0; font-weight: 500; font-size: 18px">Scoring projects</h3>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 32px">
 <div><p style="margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; color: var(--redtext)">2023</p><ul style="margin: 0; padding: 0; list-style: none"><li style="padding: 10px 0; border-top: 1px solid var(--line)">Called Shot</li></ul></div>
@@ -650,6 +694,7 @@ html.loading { overflow: hidden; }
 </div>
 <p style="position: relative; margin: 0; padding: 16px clamp(20px, 5.5vw, 80px) 28px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink2)">Updated fall 2026, week 12</p>
 </footer>
+<div class="player dock" id="dock" role="region" aria-label="Music player"></div>
 <div class="sky" aria-hidden="true">
 <div class="fly" style="width: 110px; offset-path: path('M -160 560 C 300 520, 600 300, 900 260 S 1500 200, 2600 60'); animation-duration: 46s; animation-delay: -1s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 3.2s; animation-delay: -0.4s"></div>
 <div class="fly back" style="width: 56px; offset-path: path('M 2600 170 C 1600 250, 1000 110, 500 190 S -100 290, -240 250'); animation-duration: 39s; animation-delay: -24s"><img class="flap inkdark" src="assets/img/swallow-flying-ink-flap.webp" alt="" style="animation-duration: 2.8s; animation-delay: -1.7s"></div>
@@ -664,60 +709,350 @@ html.loading { overflow: hidden; }
 // ---------- Music: the swallows on the staff and the track list share one player ----------
 // Keep in the same order as the swallows and track rows in the Music section.
 var TRACKS = [
-  { title: "All the Time", note: "Main theme", src: "assets/music/01-all-the-time.m4a" },
-  { title: "Where the River Flows", note: "Cue 5m4", src: "assets/music/02-where-the-river-flows.m4a" },
-  { title: "Weight of the World", note: "featuring Sinchana Nama", src: "assets/music/03-weight-of-the-world.m4a" },
-  { title: "A Center", note: "", src: "assets/music/04-a-center.m4a" },
-  { title: "Fun and Games", note: "Senior piece", src: "assets/music/05-fun-and-games.m4a" },
-  { title: "Adventure Fantasy Game Theme", note: "With the forest day and night loop", src: "assets/music/06-adventure-fantasy-game-theme.m4a" },
-  { title: "Sorcerer Smackdown", note: "Character select", src: "assets/music/07-sorcerer-smackdown.m4a" },
-  { title: "Networking", note: "A joke song", src: "assets/music/08-networking.m4a" }
+  { title: "All the Time", note: "Main theme", src: "assets/music/01-all-the-time.m4a", dur: 42.36,
+    peaks: [66,59,64,55,52,51,53,95,71,61,86,98,75,63,97,46,29,38,38,36,49,70,62,56,67,69,49,41,56,56,66,77,78,66,68,80,73,63,53,54,56,56,55,56,76,67,38,32,30,33,57,47,66,45,39,79,79,60,43,50,38,36,50,64,67,52,62,74,57,46,45,50,75,75,80,74,91,69,77,61,59,59,48,43,68,65,58,54,51,56,56,99,86,88,75,61,57,52,79,63,50,37,31,30,30,82,64,51,37,33,31,28,30,43,47,48,48,51,55,55,35,43,46,33,45,36,31,42,40,32,30,29,29,40,44,54,58,57,63,48,42,46,49,30,5,4,2,2,2,1,1,1,1,1,0,0,0,0,0,0] },
+  { title: "Where the River Flows", note: "Cue 5m4", src: "assets/music/02-where-the-river-flows.m4a", dur: 84.01,
+    peaks: [0,2,3,3,8,18,8,16,15,24,31,30,21,28,26,39,30,37,41,44,49,52,55,56,61,85,49,57,67,48,68,64,45,42,27,44,37,36,46,48,44,44,55,64,43,42,42,46,54,50,75,58,59,54,44,36,40,39,33,27,44,21,48,47,36,29,43,66,80,50,50,64,49,49,63,76,77,80,84,66,71,56,46,43,49,54,42,28,48,49,58,40,58,62,60,48,52,61,60,50,40,67,80,70,56,56,61,37,61,39,46,39,53,77,99,60,83,47,58,66,52,62,72,56,59,61,65,42,43,54,58,65,54,46,45,42,41,27,26,15,10,9,5,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+  { title: "Weight of the World", note: "featuring Sinchana Nama", src: "assets/music/03-weight-of-the-world.m4a", dur: 148.37,
+    peaks: [21,14,3,6,29,23,13,8,12,49,58,37,22,53,60,55,43,37,39,30,43,75,76,72,65,56,79,78,77,60,70,63,53,74,68,73,82,77,67,56,75,76,79,73,63,70,67,69,64,69,67,74,63,62,59,39,63,85,73,60,71,71,67,71,73,56,71,68,62,47,62,62,54,54,54,78,84,73,64,55,83,82,86,50,56,69,68,57,50,71,72,92,50,35,83,82,62,73,70,72,82,80,60,77,78,61,78,67,73,68,71,76,77,81,74,82,75,65,80,85,88,72,83,77,66,76,68,71,72,79,75,86,92,66,85,85,99,83,54,75,81,82,41,62,77,86,88,27,92,77,94,47,13,11,10,5,1,0,0,0] },
+  { title: "A Center", note: "", src: "assets/music/04-a-center.m4a", dur: 99.24,
+    peaks: [0,0,0,0,21,28,20,43,36,24,42,45,45,40,49,26,22,24,23,24,28,34,36,34,26,28,25,23,40,38,29,41,37,41,44,30,32,41,57,34,53,53,34,21,25,24,25,28,26,21,27,26,28,26,27,27,33,32,33,24,18,18,25,14,11,25,52,76,51,42,39,61,55,58,65,28,34,30,26,21,15,46,33,33,28,60,70,46,9,80,78,95,68,39,49,99,80,68,72,31,77,67,47,43,37,33,76,43,42,47,12,42,43,56,58,48,50,57,66,83,71,46,72,47,48,49,27,29,47,53,35,16,53,65,58,51,79,78,33,54,52,37,52,23,29,42,50,35,32,34,12,26,35,48,50,50,44,37,20,2] },
+  { title: "Fun and Games", note: "Senior piece", src: "assets/music/05-fun-and-games.m4a", dur: 281.17,
+    peaks: [43,48,55,57,25,12,27,38,71,44,42,54,82,85,97,81,71,75,90,69,75,97,92,77,32,30,28,27,29,36,32,29,33,31,24,25,38,41,47,71,64,63,60,56,57,50,70,78,78,72,76,69,67,70,59,68,64,59,45,52,46,48,47,51,36,45,45,52,57,51,57,86,88,76,80,84,85,79,43,39,38,29,36,34,47,58,51,33,42,58,65,81,99,92,90,98,85,91,69,63,32,30,55,33,32,46,44,46,26,37,44,43,43,41,32,27,26,33,30,37,40,45,49,49,55,56,48,47,32,49,39,35,34,36,31,32,29,32,35,36,25,19,51,57,79,77,68,68,68,69,56,47,72,92,92,88,89,83,58,1] },
+  { title: "Adventure Fantasy Game Theme", note: "With the forest day and night loop", src: "assets/music/06-adventure-fantasy-game-theme.m4a", dur: 160.59,
+    peaks: [58,61,63,65,44,37,37,36,58,60,62,66,56,37,37,38,67,68,73,72,48,47,47,51,57,58,58,53,34,40,31,57,74,75,91,93,81,74,76,83,95,77,92,91,99,95,91,92,82,83,70,57,49,43,7,1,22,18,23,25,23,25,20,25,34,27,30,29,37,28,30,27,25,21,22,28,32,36,26,28,32,27,27,36,28,27,30,23,29,36,24,25,25,26,30,34,27,30,23,26,34,47,40,32,28,27,45,57,41,38,53,38,39,58,46,43,62,54,34,61,61,31,53,56,29,60,53,45,65,59,52,49,58,44,33,54,45,23,57,50,38,57,59,32,60,68,35,49,45,32,50,52,46,49,62,46,33,7,2,0] },
+  { title: "Sorcerer Smackdown", note: "Character select", src: "assets/music/07-sorcerer-smackdown.m4a", dur: 68.59,
+    peaks: [70,67,73,61,71,64,72,59,69,63,73,63,70,61,71,60,81,70,89,87,83,86,82,63,73,69,58,61,54,61,80,73,82,75,81,70,74,63,73,59,73,68,75,66,77,66,80,66,76,71,80,69,76,71,74,68,74,68,75,64,71,67,75,63,75,69,76,66,70,64,76,62,76,69,78,64,72,61,75,68,75,68,76,64,72,67,78,63,78,73,83,76,78,73,81,68,64,61,41,30,34,19,38,31,41,42,40,35,31,20,33,31,40,42,38,32,33,40,35,40,40,39,36,34,42,49,52,48,41,56,38,40,42,39,56,39,47,40,39,34,37,16,51,20,72,60,60,62,60,56,57,55,57,66,88,77,96,99,97,77] },
+  { title: "Networking", note: "A joke song", src: "assets/music/08-networking.m4a", dur: 218.41,
+    peaks: [49,53,71,33,51,42,60,52,56,40,53,39,62,66,72,54,59,55,57,64,52,53,75,73,45,71,58,71,50,70,73,47,70,70,64,85,83,75,93,80,86,70,50,57,74,64,76,62,49,62,81,66,67,64,63,90,75,82,62,80,54,82,84,76,84,69,63,77,68,51,65,65,39,75,75,48,31,22,52,45,19,26,38,47,70,51,71,51,33,58,42,62,40,49,31,41,26,35,26,41,20,60,52,44,39,38,22,23,74,85,92,78,64,54,99,83,90,80,79,64,83,80,64,74,61,94,90,99,77,86,73,68,66,72,86,75,54,76,70,54,63,74,50,65,75,54,50,72,62,58,70,66,47,70,60,49,52,25,11,0] }
 ];
 
+// ---------- Music player ----------
+// One Audio for the whole page. The swallows, the track rows, the card under the staff and the dock
+// all start, pause and seek the same piece, and all redraw from the same state.
 (function () {
-  var audio = null;
-  var playing = null;
+  var site = document.getElementById("site");
   var nowPlaying = document.getElementById("now-playing");
   var buttons = document.querySelectorAll("[data-track]");
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var audio = null;
+  var current = 0;      // the piece the players show; the first one is cued before anything plays
+  var loaded = null;    // the piece whose file is in the Audio
+  var startAt = 0;      // where the cued piece will start, if it was seeked before it was loaded
+  var pending = null;   // a seek made before the file's metadata arrived
+  var failed = false;   // the loaded file couldn't be played
+  var dismissed = false; // the dock was closed; playing anything brings it back
+  var cardSeen = true;  // at least half of the card under the staff is on screen
+  var colors = {};
+  var raf = 0;
 
-  function render() {
-    buttons.forEach(function (b) {
-      var i = Number(b.dataset.track), on = i === playing;
-      b.classList.toggle("sing", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.setAttribute("aria-label", (on ? "Pause " : "Play ") + TRACKS[i].title);
+  var ICON_PLAY = '<svg class="pl-play" width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 1.6 L10.4 6 L3.2 10.4 Z" fill="currentColor"/></svg>';
+  var ICON_PAUSE = '<svg class="pl-pause" width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1.5" width="2.6" height="9" rx=".6" fill="currentColor"/><rect x="7.4" y="1.5" width="2.6" height="9" rx=".6" fill="currentColor"/></svg>';
+  var ICON_CLOSE = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 2.5 L11.5 11.5 M11.5 2.5 L2.5 11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s || 0));
+    return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+  }
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+  function isPlaying() { return !!(audio && loaded !== null && !audio.paused && !failed); }
+
+  // Where the shown piece is, in seconds, and how long it is.
+  function position() {
+    var t = TRACKS[current], live = audio && loaded === current;
+    var dur = live && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : (t.dur || 0);
+    var at = live ? (pending != null ? pending : audio.currentTime) : startAt;
+    return { dur: dur, at: clamp(at || 0, 0, dur) };
+  }
+
+  function makeAudio() {
+    audio = new Audio();
+    audio.preload = "auto";
+    ["play", "pause", "ended", "seeked", "durationchange"].forEach(function (type) {
+      audio.addEventListener(type, render);
     });
-    if (playing === null) {
-      nowPlaying.textContent = "Tap a swallow on the staff, or press play on a piece below.";
-    } else {
-      var t = TRACKS[playing];
-      nowPlaying.textContent = "Now playing " + t.title +
-        (t.note ? ", " + t.note.charAt(0).toLowerCase() + t.note.slice(1) : "") + ".";
-    }
+    audio.addEventListener("timeupdate", paint);
+    audio.addEventListener("loadedmetadata", function () {
+      if (pending != null) { var t = pending; pending = null; audio.currentTime = t; }
+      render();
+    });
+    audio.addEventListener("ended", function () { say("Finished " + TRACKS[loaded].title + "."); });
+    audio.addEventListener("error", function () {
+      if (!audio.getAttribute("src")) return;
+      failed = true;
+      say("Couldn't play " + TRACKS[loaded].title + ".");
+      render();
+    });
+  }
+
+  function play() {
+    var src = audio.src, p = audio.play();
+    if (p && p.catch) p.catch(function (err) {
+      // A newer track or a pause cancels this play; anything else means it couldn't start.
+      if (err && err.name === "AbortError") return;
+      if (audio.src === src) audio.pause();
+      render();
+    });
+  }
+
+  function load(i, at) {
+    if (!audio) makeAudio();
+    current = i;
+    loaded = i;
+    startAt = 0;
+    failed = false;
+    pending = at > 0 ? at : null;
+    audio.src = TRACKS[i].src;
+    play();
+    var t = TRACKS[i];
+    say("Now playing " + t.title + (t.note ? ", " + t.note.charAt(0).toLowerCase() + t.note.slice(1) : "") + ".");
+    players.forEach(function (p) { p.reveal = still.matches ? 0 : performance.now(); p.path = null; });
+    render();
   }
 
   function toggle(i) {
-    if (!audio) {
-      audio = new Audio();
-      audio.addEventListener("ended", function () { playing = null; render(); });
-    }
-    if (playing === i) {
-      audio.pause();
-      playing = null;
+    dismissed = false;
+    if (loaded === i && !failed) {
+      if (audio.paused) play(); else audio.pause();
       render();
       return;
     }
-    audio.src = TRACKS[i].src;
-    var p = audio.play();
-    // A failed play clears the state, unless another track was picked in the meantime.
-    if (p && p.catch) p.catch(function () { if (playing === i) { playing = null; render(); } });
-    playing = i;
+    load(i, i === current ? startAt : 0);
+  }
+
+  // Seek the shown piece. A click or drag also starts it; the keyboard only moves the playhead.
+  function seek(at, andPlay) {
+    var pos = position();
+    at = clamp(at, 0, pos.dur);
+    if (loaded !== current || failed) {
+      if (andPlay) { dismissed = false; load(current, at); }
+      else { startAt = at; paint(); }
+      return;
+    }
+    if (audio.readyState < 1) pending = at; else audio.currentTime = at;
+    if (andPlay && audio.paused) { dismissed = false; play(); }
     render();
   }
+
+  function say(text) { nowPlaying.textContent = text; }
+
+  // ---- the two players: the card under the staff and the dock ----
+  function build(root, docked) {
+    root.innerHTML =
+      '<button type="button" class="pl-toggle">' + ICON_PLAY + ICON_PAUSE + '</button>' +
+      '<p class="pl-title">' + (docked ? '<a class="pl-name" href="#music"></a>' : '<span class="pl-name"></span>') +
+        '<span class="pl-note"></span></p>' +
+      '<div class="pl-wave" role="slider" tabindex="0" aria-valuemin="0"><canvas></canvas><span class="pl-tip" hidden></span></div>' +
+      '<p class="pl-times" aria-hidden="true"><span class="pl-at"></span><span class="pl-dur"></span></p>' +
+      (docked ? '<button type="button" class="pl-close" aria-label="Pause and close the player">' + ICON_CLOSE + '</button>' : "");
+    function $(sel) { return root.querySelector(sel); }
+    var p = {
+      root: root, docked: docked, toggle: $(".pl-toggle"), name: $(".pl-name"), note: $(".pl-note"),
+      wave: $(".pl-wave"), canvas: $("canvas"), tip: $(".pl-tip"), at: $(".pl-at"), dur: $(".pl-dur"),
+      w: 0, h: 0, dpr: 1, path: null, pathKey: "", drag: null, hover: null, reveal: 0, shown: !docked, text: {}
+    };
+    p.ctx = p.canvas.getContext("2d");
+    p.toggle.addEventListener("click", function () { toggle(current); });
+
+    function fraction(e) {
+      var r = p.wave.getBoundingClientRect();
+      return r.width ? clamp((e.clientX - r.left) / r.width, 0, 1) : 0;
+    }
+    p.wave.addEventListener("pointerdown", function (e) {
+      if (e.button) return;
+      p.drag = fraction(e);
+      try { p.wave.setPointerCapture(e.pointerId); } catch (_) {}
+      paint();
+    });
+    p.wave.addEventListener("pointermove", function (e) {
+      var f = fraction(e);
+      if (p.drag != null) p.drag = f;
+      p.hover = e.pointerType === "mouse" ? f : null;
+      paint();
+    });
+    p.wave.addEventListener("pointerup", function () {
+      if (p.drag == null) return;
+      var f = p.drag;
+      p.drag = null;
+      seek(f * position().dur, true);
+    });
+    p.wave.addEventListener("pointercancel", function () { p.drag = null; p.hover = null; paint(); });
+    p.wave.addEventListener("pointerleave", function () { if (p.drag == null) { p.hover = null; paint(); } });
+    p.wave.addEventListener("keydown", function (e) {
+      var pos = position(), steps = { ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5, PageDown: -30, PageUp: 30 };
+      var to = e.key in steps ? pos.at + steps[e.key] : e.key === "Home" ? 0 : e.key === "End" ? pos.dur : null;
+      if (to == null) return;
+      e.preventDefault();
+      seek(to, false);
+    });
+
+    if (docked) {
+      $(".pl-close").addEventListener("click", function () {
+        if (audio) audio.pause();
+        dismissed = true;
+        render();
+        players[0].toggle.focus({ preventScroll: true });
+      });
+    }
+
+    new ResizeObserver(function () {
+      var r = p.wave.getBoundingClientRect();
+      p.dpr = window.devicePixelRatio || 1;
+      p.w = r.width;
+      p.h = r.height;
+      p.canvas.width = Math.round(r.width * p.dpr);
+      p.canvas.height = Math.round(r.height * p.dpr);
+      p.path = null;
+      paint();
+    }).observe(p.wave);
+    return p;
+  }
+
+  // The waveform as one brush stroke: thick where the piece is loud, thin where it's quiet,
+  // tapered at both ends, with a little unevenness so it reads as ink rather than a chart.
+  function strokePath(p) {
+    var peaks = TRACKS[current].peaks, key = current + ":" + p.w + "x" + p.h;
+    if (p.path && p.pathKey === key) return p.path;
+    var path = new Path2D(), w = p.w, mid = p.h / 2;
+    if (peaks && peaks.length > 1) {
+      var thin = 1.2, thick = p.h / 2 - 1, n = peaks.length, top = [], bottom = [];
+      for (var x = 0; x <= w; x += 2) {
+        var u = (x / w) * (n - 1), k = Math.floor(u), f = u - k;
+        var level = (peaks[k] * (1 - f) + (peaks[Math.min(k + 1, n - 1)] || 0) * f) / 99;
+        var taper = Math.min(1, x / 10, (w - x) / 10);
+        var half = (thin + (thick - thin) * level) * Math.max(taper, 0.15);
+        top.push([x, mid - half * (1 + 0.05 * Math.sin(x * 0.37 + current))]);
+        bottom.push([x, mid + half * (1 + 0.05 * Math.sin(x * 0.23 + 2 * current))]);
+      }
+      path.moveTo(top[0][0], top[0][1]);
+      top.forEach(function (pt) { path.lineTo(pt[0], pt[1]); });
+      for (var j = bottom.length - 1; j >= 0; j--) path.lineTo(bottom[j][0], bottom[j][1]);
+      path.closePath();
+    } else {
+      // No peaks for this piece: a plain bar.
+      var r = 2;
+      path.moveTo(r, mid - r);
+      path.lineTo(w - r, mid - r);
+      path.arc(w - r, mid, r, -Math.PI / 2, Math.PI / 2);
+      path.lineTo(r, mid + r);
+      path.arc(r, mid, r, Math.PI / 2, Math.PI * 1.5);
+      path.closePath();
+    }
+    p.path = path;
+    p.pathKey = key;
+    return path;
+  }
+
+  function draw(p, pos, now) {
+    var ctx = p.ctx, w = p.w, h = p.h;
+    if (!w || !h) return;
+    var frac = p.drag != null ? p.drag : pos.dur ? pos.at / pos.dur : 0, x = frac * w;
+    var path = strokePath(p);
+    var reveal = p.reveal ? Math.min(1, (now - p.reveal) / 450) : 1;
+    if (reveal >= 1) p.reveal = 0;
+    ctx.setTransform(p.dpr, 0, 0, p.dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, w * (1 - Math.pow(1 - reveal, 3)), h);
+    ctx.clip();
+    ctx.globalAlpha = 0.24;
+    ctx.fillStyle = colors.ink;
+    ctx.fill(path);
+    ctx.restore();
+    if (x > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, x, h);
+      ctx.clip();
+      ctx.fillStyle = colors.red;
+      ctx.fill(path);
+      ctx.restore();
+    }
+    ctx.fillStyle = colors.ink;
+    if (p.hover != null && p.drag == null) {
+      ctx.globalAlpha = 0.45;
+      ctx.fillRect(Math.round(p.hover * w) - 0.5, 0, 1, h);
+      ctx.globalAlpha = 1;
+    }
+    if (loaded === current || frac > 0) ctx.fillRect(clamp(x - 1, 0, w - 2), 0, 2, h);
+  }
+
+  function setText(p, key, el, text) { if (p.text[key] !== text) { el.textContent = text; p.text[key] = text; } }
+  function setAttr(p, key, value) { if (p.text[key] !== value) { p.wave.setAttribute(key, value); p.text[key] = value; } }
+
+  // Redraw the moving parts: times, slider values, waveform.
+  function paint() {
+    var pos = position(), now = performance.now();
+    players.forEach(function (p) {
+      var at = p.drag != null ? p.drag * pos.dur : pos.at;
+      setText(p, "at", p.at, fmt(at));
+      setText(p, "dur", p.dur, fmt(pos.dur));
+      setAttr(p, "aria-valuemax", String(Math.round(pos.dur)));
+      setAttr(p, "aria-valuenow", String(Math.floor(at)));
+      setAttr(p, "aria-valuetext", fmt(at) + " of " + fmt(pos.dur));
+      if (p.hover != null) {
+        p.tip.hidden = false;
+        p.tip.textContent = fmt(p.hover * pos.dur);
+        p.tip.style.left = clamp(p.hover * p.w, 18, p.w - 18) + "px";
+      } else p.tip.hidden = true;
+      if (p.shown) draw(p, pos, now);
+    });
+    loop();
+  }
+
+  function loop() {
+    if (raf) return;
+    var busy = players.some(function (p) { return p.shown && (p.reveal || p.drag != null || isPlaying()); });
+    if (busy) raf = requestAnimationFrame(function () { raf = 0; paint(); });
+  }
+
+  // Redraw everything that depends on which piece is loaded and whether it's playing.
+  function render() {
+    var on = isPlaying(), t = TRACKS[current];
+    buttons.forEach(function (b) {
+      var i = Number(b.dataset.track), sing = on && i === loaded;
+      b.classList.toggle("sing", sing);
+      b.setAttribute("aria-pressed", sing ? "true" : "false");
+      b.setAttribute("aria-label", (sing ? "Pause " : "Play ") + TRACKS[i].title);
+    });
+    players.forEach(function (p) {
+      p.root.classList.toggle("sing", on);
+      p.toggle.setAttribute("aria-label", (on ? "Pause " : "Play ") + t.title);
+      p.name.textContent = t.title;
+      p.note.textContent = failed && loaded === current ? "Couldn't load this piece." : (t.note || "");
+      setAttr(p, "aria-label", "Position in " + t.title);
+    });
+    var dock = players[1], show = loaded !== null && !cardSeen && !dismissed;
+    if (dock.shown !== show) {
+      dock.shown = show;
+      dock.root.classList.toggle("on", show);
+      document.documentElement.classList.toggle("dock-on", show);
+    }
+    paint();
+  }
+
+  var players = [build(document.getElementById("player"), false), build(document.getElementById("dock"), true)];
+
+  function readColors() {
+    var cs = getComputedStyle(site);
+    colors.ink = cs.getPropertyValue("--ink").trim() || "#1B1B1A";
+    colors.red = cs.getPropertyValue("--redtext").trim() || "#A32A22";
+  }
+  readColors();
+  new MutationObserver(function () { readColors(); paint(); }).observe(site, { attributes: true, attributeFilter: ["class"] });
+
+  new IntersectionObserver(function (entries) {
+    var e = entries[entries.length - 1];
+    players[0].shown = e.isIntersecting;
+    cardSeen = e.intersectionRatio >= 0.5;
+    render();
+  }, { threshold: [0, 0.5, 1] }).observe(players[0].root);
 
   buttons.forEach(function (b) {
     b.addEventListener("click", function () { toggle(Number(b.dataset.track)); });
   });
+  render();
 })();
 
 // ---------- Time-of-day slider in the hero ----------
