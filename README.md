@@ -20,16 +20,15 @@ Then open http://localhost:8642. This is Python's built-in file server plus byte
 | City clock | Under "See the work" in the hero, as `LAX/Los Angeles 洛杉矶 · 10:36 PM`. Hovering with a mouse, tapping, or Enter/Space flips it departure-board style to the next stop (LAX, SJC, JFK, HKG, PEK, CGQ, then back to LAX) and repaints the sky for that city's hour. Edit the stops in the `CITIES` array in the "City clock in the hero" script. Reduced motion swaps the text without the flip. |
 | Loading screen | The 时 stroke-order board with a mullet that hops, lands on its side, then leaps again and flops onto its back; the strokes are timed to the fish and start when its animation loads. Shows on every page load and stays until 时 is fully drawn (about 3.5 s) and the page has loaded, but never more than 6 s. "Enter →" skips it. The timings are `MIN_MS` and `MAX_MS` near the bottom of index.html. |
 | Music | The swallows on the staff and the track list share one player. The card under the staff draws the playing piece as an ink stroke, thick where it's loud and red as far as you've listened. Click or drag on it to skip, or focus it and use the arrow keys (5 s), Page Up/Down (30 s), Home and End. Scroll the card out of view while a piece is loaded and the same controls dock in the bottom-right corner (a bar along the bottom on phones); × pauses and closes it. So nothing clicks, the sound fades in when it starts (80 ms), fades out before it pauses or changes piece (150 ms), and dips out and back in around a skip (40 ms); the lengths are `FADE_IN`, `FADE_OUT` and `DIP` in the player script. On phones each swallow has an invisible tap area about three swallows wide and 44 px tall. The `TRACKS` list near the bottom of index.html has to stay in the same order as the swallows and the track rows. Each entry's `dur` and `peaks` come from `python3 tools/waveform-peaks.py assets/music/*.m4a` (needs ffmpeg and numpy); a track without `peaks` shows a plain bar. |
+| Writing | The newest four Substack posts, read from the feed when the page loads (through rss2json.com, because Substack's feed doesn't let other sites read it), skipping the "Start here" post. If that fails or takes more than 8 s, the four rows written in the HTML stay, so refresh them now and then. The script is "Writing: latest posts" at the bottom of index.html. |
 | Footer clocks | Bay Area and China time, plus approximate sunrise and sunset for Hong Kong, Beijing and Changchun. They refresh every 30 seconds. |
 | Sundays page | The 时 whose 日 turns into the sun (click it to replay), and the round timer: 45 minutes of work with the sun above the horizon, 10 minutes to talk below it. "Preview at 60×" runs a minute every second. |
+| Say hello card | In the footer. The email row shows "Email · tap to show"; clicking it puts the address together and turns the row into a mailto link. The address is stored reversed in two pieces (`data-u` and `data-d` on `#email`), so it never appears in the page source for scrapers to find. |
 | Visit counts | Cookie-free counts from [GoatCounter](https://richardshizhang.goatcounter.com). |
 
 ## Still to fill in
 
-- `[YOUR EMAIL]` in the Say hello card
 - `[More to come: ...]` at the bottom of sundays.html
-- Instagram, GitHub and LinkedIn links (they point to the top of the page for now)
 - "Longer bio →" and "Résumé →" (they point to About for now)
-- The Writing posts all link to the Substack home page, not to each post
 
 `RawAssets/` holds the original exports and isn't published. The site uses the smaller copies in `assets/`.
