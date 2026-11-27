@@ -47,6 +47,13 @@ a.red{color:#A32A22}
 .polaroid img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
 .polaroid figcaption{font-family:'Noto Serif SC',serif;font-size:13px;color:#3d3b37;padding:9px 2px 12px;text-align:center}
 .go-again .m0,.go-again .m1,.go-again .m2,.go-again .m3,.go-again .m4,.go-again .m5,.go-again .m6,.go-again .ri,.go-again .sundisc{animation-name:none}
+.card{position:relative;background:#F8F5EE;border:1px solid rgba(27,27,26,.12);border-radius:16px;padding:clamp(16px,3vw,32px);display:flex;flex-direction:column;gap:20px;transition:border-color .4s,box-shadow .4s}
+.card.rang{border-color:rgba(181,51,42,.6);box-shadow:0 0 0 4px rgba(181,51,42,.12)}
+.cue{position:absolute;top:clamp(10px,2.4vw,24px);left:50%;z-index:1;margin:0;width:max-content;max-width:calc(100% - 24px);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:#B5332A;color:#F6F1E7;font-size:15px;font-weight:500;line-height:1.3;box-shadow:0 6px 18px rgba(158,42,34,.22);opacity:0;transform:translate(-50%,-6px);transition:opacity .35s,transform .35s;pointer-events:none}
+.cue.on{opacity:1;transform:translate(-50%,0)}
+.cue svg{flex:none}
+#t-toggle{min-width:6.5em}
+@media (prefers-reduced-motion:reduce){.cue{transform:translate(-50%,0);transition:opacity .2s}.card{transition:none}}
 </style>
 </head>
 <body>
@@ -90,7 +97,8 @@ a.red{color:#A32A22}
 <section id="rounds" style="padding: 56px clamp(20px, 5.5vw, 80px); display: flex; flex-direction: column; gap: 24px; border-top: 1px solid rgba(27,27,26,.12)">
 <h2 style="margin: 0; font-weight: 500; font-size: 28px">How a Sunday runs</h2>
 <p style="margin: 0; max-width: 42em; color: #55534E">We work in rounds on a shared timer: 45 minutes of deep work, then 10 minutes to talk. Each round is a small day. The sun crosses the sky while everyone works, then slips back under the horizon while we talk, and rises again for the next round.</p>
-<div style="background: #F8F5EE; border: 1px solid rgba(27,27,26,.12); border-radius: 16px; padding: clamp(16px, 3vw, 32px); display: flex; flex-direction: column; gap: 20px">
+<div class="card" id="timer-card">
+<p class="cue" id="cue" role="status"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.75a4.25 4.25 0 0 0-4.25 4.25v2.5L2.5 11h11l-1.25-2.5V6A4.25 4.25 0 0 0 8 1.75z"></path><path d="M6.5 13.25a1.6 1.6 0 0 0 3 0"></path></svg><span id="cue-text"></span></p>
 <svg viewBox="0 0 1000 400" role="img" id="scene" aria-label="The sun at the start of a 45-minute round" style="width: 100%; height: auto; display: block">
 <defs>
 <radialGradient id="tsun" cx=".4" cy=".38" r=".7"><stop offset="0" stop-color="#D2463A"></stop><stop offset=".7" stop-color="#B5332A"></stop><stop offset="1" stop-color="#9E2A22"></stop></radialGradient>
@@ -116,20 +124,23 @@ a.red{color:#A32A22}
 <g clip-path="url(#below)" opacity=".35"><circle class="tsun" cx="120" cy="300" r="26" fill="url(#tsun)"></circle></g>
 </svg>
 <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 40px">
-<div style="display: flex; flex-direction: column; gap: 4px">
+<!-- A fixed width for the clock column and the Pause/Resume button, so the buttons don't jump when the text changes. -->
+<div style="flex: 1 1 17em; display: flex; flex-direction: column; gap: 4px">
 <p id="phase" style="margin: 0; font-size: 14px; letter-spacing: .06em; color: #55534E">Round 1. 45 minutes of deep work</p>
 <p aria-live="off" style="margin: 0; font-size: clamp(48px, 8vw, 84px); line-height: 1; font-variant-numeric: tabular-nums" id="clock">45:00</p>
 <p id="next" style="margin: 0; font-size: 14px; color: #55534E">Press start to begin the round.</p>
+<p id="sound" hidden style="margin: 0; font-size: 14px; color: #A32A22">Tap or click anywhere on the page to turn the bell back on.</p>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 10px">
 <button type="button" class="btn primary" id="t-toggle">Start</button>
 <button type="button" class="btn" id="t-skip">Skip phase</button>
 <button type="button" class="btn" id="t-reset">Reset</button>
 <button type="button" class="btn" id="t-fast" aria-pressed="false">Preview at 60×</button>
+<button type="button" class="btn" id="t-mute" aria-pressed="false">Mute bell</button>
 </div>
 </div>
 </div>
-<p style="margin: 0; font-size: 13px; color: #55534E">Preview runs a minute every second, so a whole round takes under a minute.</p>
+<p style="margin: 0; font-size: 13px; color: #55534E">The time left shows in the tab's title, and a bell rings when work or talk time is up, even if you've switched tabs. Preview runs a minute every second, so a whole round takes under a minute.</p>
 </section>
 
 <section style="padding: 56px clamp(20px, 5.5vw, 80px); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 40px 64px; border-top: 1px solid rgba(27,27,26,.12)">
@@ -164,71 +175,280 @@ a.red{color:#A32A22}
 })();
 
 // The round timer: 45 minutes of work with the sun above the horizon, 10 to talk with it below.
+// The time left is worked out from a stored end time, never by counting ticks. So it stays right
+// in a background tab, where browsers slow timers down, and across a reload (it's saved in localStorage).
 (function () {
-  var DUR = [45 * 60, 10 * 60];
-  var s = { phase: 0, elapsed: 0, since: null, round: 1, fast: false };
+  var DUR = [45 * 60, 10 * 60];            // seconds of work, seconds of talk
+  var NAME = ["Work", "Talk"];
+  var KEY = "sundays-timer";
+  var BASE = document.title;
+  var AC = window.AudioContext || window.webkitAudioContext;
   var $ = function (id) { return document.getElementById(id); };
   var suns = document.querySelectorAll(".tsun");
+  var s = restore() || fresh(false, false);
+  var ctx = null, master = null, waking = false;
+  var bell = null, bellLead = 0, bellLoad = null, tryout = null;
+  var plan = [];                            // bells booked on the audio clock: { at (wall-clock ms), when (audio time), out, nodes, bell }
+  var cueTimer = null, cueLate = false;
 
+  // s.endsAt is the wall-clock time the current part ends while running, null while paused.
+  // s.left is the seconds left while paused. In preview a second of real time is a minute.
+  function fresh(fast, muted) { return { phase: 0, round: 1, started: false, endsAt: null, left: DUR[0], fast: fast, muted: muted }; }
   function speed() { return s.fast ? 60 : 1; }
-  function el(now) { return s.elapsed + (s.since != null ? (now - s.since) / 1000 * speed() : 0); }
+  function running() { return s.endsAt != null; }
+  function left(now) { return running() ? Math.max(0, (s.endsAt - now) / 1000 * speed()) : s.left; }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
 
-  function render() {
-    var now = Date.now(), dur = DUR[s.phase];
-    var e = Math.min(el(now), dur), p = e / dur, a = Math.PI * p, x, y;
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  function restore() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY)), now = Date.now();
+      if (!o || (o.phase !== 0 && o.phase !== 1) || !(o.round >= 1)) return null;
+      var t = { phase: o.phase, round: Math.floor(o.round), started: !!o.started, fast: !!o.fast, muted: !!o.muted,
+        endsAt: typeof o.endsAt === "number" && isFinite(o.endsAt) ? o.endsAt : null,
+        left: Math.min(DUR[o.phase], Math.max(0, +o.left || 0)) };
+      var k = t.fast ? 60 : 1;
+      if (t.endsAt != null && (t.endsAt - now) / 1000 * k > DUR[t.phase]) t.endsAt = now + DUR[t.phase] * 1000 / k;
+      // A timer left running for more than 12 hours was forgotten: start again, but keep the mute choice.
+      if (t.endsAt != null && now - t.endsAt > 12 * 3600e3) return fresh(false, t.muted);
+      return t;
+    } catch (e) { return null; }
+  }
+
+  // Move on to the next part whenever the stored end time has passed (several, after a long sleep).
+  function advance(now, live) {
+    var ended = -1, at = 0, n = 0;
+    while (running() && now >= s.endsAt && n++ < 500) {
+      ended = s.phase; at = s.endsAt;
+      s.phase = 1 - s.phase;
+      if (s.phase === 0) s.round++;
+      s.endsAt = at + DUR[s.phase] * 1000 / speed();
+    }
+    if (ended < 0) return;
+    save();
+    if (!live) return;
+    // The bell was booked ahead on the audio clock. Ring it here only if it wasn't and we're still on time.
+    var booked = plan.some(function (c) { return Math.abs(c.at - at) < 5; });
+    if (!booked && now - at < 3000 && !s.muted && audioReady()) ring(ctx.currentTime + 0.02, ended === 1);
+    cue(ended === 0 ? "Time's up. 10 minutes to talk." : "Back to work. Round " + s.round + ".");
+  }
+
+  // The sound. Web Audio can only start during a click or key press, so this runs from those.
+  function audioReady() { return !!ctx && ctx.state === "running"; }
+  function wake(then) {
+    if (s.muted || !AC) return;
+    try {
+      if (!ctx) {
+        ctx = new AC({ latencyHint: "playback" });
+        master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+        ctx.onstatechange = function () { book(); render(Date.now()); };
+        loadBell();
+      }
+      if (ctx.state === "running") { if (then) then(); return; }
+      waking = true;
+      ctx.resume().then(function () { waking = false; book(); render(Date.now()); if (then) then(); },
+        function () { waking = false; render(Date.now()); });
+    } catch (e) { waking = false; }
+  }
+  // A recreation of the period-end bell at Richard's high school, rung at audio time t.
+  function loadBell() {
+    if (!bellLoad) bellLoad = fetch("assets/bell.mp3")
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(function (b) { return ctx.decodeAudioData(b); })
+      .then(function (buf) {
+        // Skip the silence an MP3 decoder puts at the start, so the bell lands on the second.
+        var lead = buf.length;
+        for (var ch = 0; ch < buf.numberOfChannels; ch++) {
+          var d = buf.getChannelData(ch), i = 0;
+          while (i < lead && Math.abs(d[i]) < 0.001) i++;
+          lead = i;
+        }
+        bell = buf; bellLead = lead < buf.length ? lead / buf.sampleRate : 0;
+        book();                                // swap any chime booked while it loaded
+      })
+      .catch(function () {});                  // can't load it: the chime below rings instead
+    return bellLoad;
+  }
+  function ring(t, rise) {
+    if (!bell) return chime(t, rise);
+    var src = ctx.createBufferSource(), out = ctx.createGain();
+    src.buffer = bell;
+    out.gain.value = 1 / master.gain.value;    // the recording at its own level
+    src.connect(out); out.connect(master);
+    src.start(t, bellLead);
+    return { out: out, nodes: [src], bell: true };
+  }
+  // The fallback: three soft bell notes, falling as the sun sets at the end of work, rising when talk ends.
+  var NOTES = [783.99, 659.25, 523.25];     // G5 E5 C5
+  var PARTIALS = [[1, 0.24, 2.4], [2.76, 0.05, 0.7], [5.4, 0.016, 0.35]];   // pitch ratio, level, seconds to fade
+  function chime(t, rise) {
+    var out = ctx.createGain(), nodes = [];
+    out.connect(master);
+    (rise ? NOTES.slice().reverse() : NOTES).forEach(function (f, i) {
+      var at = t + i * 0.36;
+      PARTIALS.forEach(function (p) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = f * p[0];
+        g.gain.value = 0;
+        g.gain.setValueAtTime(0, at);
+        g.gain.linearRampToValueAtTime(p[1], at + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + p[2]);
+        o.connect(g); g.connect(out);
+        o.start(at); o.stop(at + p[2] + 0.05);
+        nodes.push(o);
+      });
+    });
+    return { out: out, nodes: nodes };
+  }
+  function unbook(c) {
+    c.nodes.forEach(function (o) { try { o.stop(); } catch (e) {} });
+    try { c.out.disconnect(); } catch (e) {}
+  }
+  // Keep the next three bells booked on the audio clock, which keeps time in a hidden tab.
+  // Rebook them if the timer changed (pause, skip, preview, mute), the two clocks drifted apart, or the bell just loaded.
+  function book() {
+    var now = Date.now(), base = audioReady() ? ctx.currentTime : 0, want = [];
+    if (running() && !s.muted && audioReady()) {
+      for (var i = 0, at = s.endsAt, p = s.phase; i < 3; i++) {
+        want.push({ at: at, rise: p === 1 });
+        p = 1 - p; at += DUR[p] * 1000 / speed();
+      }
+    }
+    plan = plan.filter(function (c) {
+      var keep;
+      if (!want.length) keep = false;                              // paused, muted or reset: silence
+      else if (c.at <= now || c.when <= base + 0.02) keep = now - c.at < 120e3;   // due, ringing or rung: leave it, and remember it so it isn't rung twice
+      else keep = !!c.bell === !!bell && want.some(function (w) { return Math.abs(w.at - c.at) < 5; }) &&
+        (Math.abs(c.when - (base + (c.at - now) / 1000)) < 0.05 || c.when - base < 1);
+      if (!keep) unbook(c);
+      return keep;
+    });
+    want.forEach(function (w) {
+      var when = base + (w.at - now) / 1000;
+      if (when <= base || plan.some(function (c) { return Math.abs(c.at - w.at) < 5; })) return;
+      var c = ring(when, w.rise);
+      c.at = w.at; c.when = when;
+      plan.push(c);
+    });
+  }
+
+  // A note over the scene when a part ends. If nobody's looking, it waits until they come back.
+  function cue(text) {
+    $("cue-text").textContent = text;
+    $("cue").classList.add("on");
+    $("timer-card").classList.add("rang");
+    clearTimeout(cueTimer);
+    cueLate = document.hidden;
+    if (!cueLate) cueTimer = setTimeout(uncue, 8000);
+  }
+  function uncue() {
+    clearTimeout(cueTimer); cueLate = false;
+    $("cue").classList.remove("on");
+    $("timer-card").classList.remove("rang");
+    cueTimer = setTimeout(function () { $("cue-text").textContent = ""; }, 400);
+  }
+
+  // The tab title, like a search engine's timer: "44:59 · Work · Sundays in LA".
+  function title(now) {
+    var t = BASE;
+    if (s.started) {
+      var l = Math.ceil(left(now)), m = Math.floor(l / 60), sec = l % 60;
+      t = m + ":" + pad(sec) + " · " + NAME[s.phase] + " · Sundays in LA";
+      if (!running()) t = "⏸ " + m + ":" + pad(sec) + " · " + NAME[s.phase] + " paused · Sundays in LA";
+    }
+    if (document.title !== t) document.title = t;
+  }
+
+  function render(now) {
+    title(now);
+    if (document.hidden) return;
+    var dur = DUR[s.phase], l = left(now), p = 1 - l / dur, a = Math.PI * p, x, y;
     if (s.phase === 0) { x = 500 - 380 * Math.cos(a); y = 300 - 230 * Math.sin(a); }
     else { x = 500 + 380 * Math.cos(a); y = 300 + 70 * Math.sin(a); }
     suns.forEach(function (c) { c.setAttribute("cx", x.toFixed(1)); c.setAttribute("cy", y.toFixed(1)); });
     $("work-arc").setAttribute("stroke-dashoffset", s.phase === 0 ? (1 - p).toFixed(4) : 0);
     $("talk-arc").setAttribute("stroke-dashoffset", s.phase === 1 ? (1 - p).toFixed(4) : 1);
-    var left = Math.max(0, Math.ceil(dur - e)), m = Math.floor(left / 60), sec = left % 60;
-    var running = s.since != null;
-    var ends = new Date(now + (dur - e) / speed() * 1000);
-    var hh = ends.getHours() % 12 || 12, mm = ("0" + ends.getMinutes()).slice(-2), ap = ends.getHours() < 12 ? "AM" : "PM";
+    var secs = Math.ceil(l), m = Math.floor(secs / 60), sec = secs % 60;
+    var ends = new Date(running() ? s.endsAt : now);
+    var hh = ends.getHours() % 12 || 12, mm = pad(ends.getMinutes()), ap = ends.getHours() < 12 ? "AM" : "PM";
     var nextName = s.phase === 0 ? "10 minutes to talk" : "round " + (s.round + 1);
     var phase = $("phase");
     phase.textContent = "Round " + s.round + ". " + (s.phase === 0 ? "45 minutes of deep work" : "10 minutes to talk");
     phase.style.color = s.phase === 0 ? "#55534E" : "#A32A22";
-    $("clock").textContent = (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
-    $("next").textContent = running ? "Then " + nextName + (s.fast ? ", in preview." : ", at " + hh + ":" + mm + " " + ap + ".")
-      : (e > 0 ? "Paused." : "Press start to begin the round.");
+    $("clock").textContent = pad(m) + ":" + pad(sec);
+    $("next").textContent = running() ? "Then " + nextName + (s.fast ? ", in preview." : ", at " + hh + ":" + mm + " " + ap + ".")
+      : (s.started ? "Paused." : "Press start to begin the round.");
+    $("sound").hidden = !(running() && !s.muted && AC && !audioReady() && !waking);
     $("scene").setAttribute("aria-label", "The sun is " + Math.round(p * 100) + " percent of the way through " +
       (s.phase === 0 ? "the 45 minutes of work, above the horizon." : "the 10-minute break, under the horizon."));
-    $("t-toggle").textContent = running ? "Pause" : (e > 0 ? "Resume" : "Start");
+    $("t-toggle").textContent = running() ? "Pause" : (s.started ? "Resume" : "Start");
     $("t-fast").setAttribute("aria-pressed", s.fast ? "true" : "false");
+    $("t-mute").setAttribute("aria-pressed", s.muted ? "true" : "false");
   }
 
-  function tick() {
-    if (s.since == null) return;
-    var now = Date.now(), e = el(now), dur = DUR[s.phase];
-    if (e >= dur) {
-      var next = (s.phase + 1) % 2;
-      if (next === 0) s.round++;
-      s.phase = next; s.elapsed = Math.min(e - dur, DUR[next]); s.since = now;
-    }
-    render();
-  }
+  function tick() { var now = Date.now(); advance(now, true); book(); render(now); }
 
-  $("t-toggle").addEventListener("click", function () {
-    var t = Date.now();
-    if (s.since != null) { s.elapsed = Math.min(el(t), DUR[s.phase]); s.since = null; }
-    else s.since = t;
-    render();
+  // Each button settles any part that just ended, changes the timer, then saves and rebooks the bells.
+  function act(id, fn) {
+    $(id).addEventListener("click", function () {
+      var now = Date.now();
+      advance(now, true); fn(now); save(); book(); render(now);
+    });
+  }
+  act("t-toggle", function (now) {
+    if (running()) { s.left = left(now); s.endsAt = null; }
+    else { s.endsAt = now + s.left * 1000 / speed(); s.started = true; wake(); }
   });
-  $("t-skip").addEventListener("click", function () {
-    var next = (s.phase + 1) % 2;
-    if (next === 0) s.round++;
-    s.phase = next; s.elapsed = 0; s.since = s.since != null ? Date.now() : null;
-    render();
+  act("t-skip", function (now) {
+    s.phase = 1 - s.phase;
+    if (s.phase === 0) s.round++;
+    s.left = DUR[s.phase];
+    if (running()) s.endsAt = now + s.left * 1000 / speed();
   });
-  $("t-reset").addEventListener("click", function () { s = { phase: 0, elapsed: 0, since: null, round: 1, fast: s.fast }; render(); });
-  $("t-fast").addEventListener("click", function () {
-    var t = Date.now();
-    s.elapsed = el(t); s.since = s.since != null ? t : null; s.fast = !s.fast;
-    render();
+  act("t-reset", function () { s = fresh(s.fast, s.muted); uncue(); });
+  act("t-fast", function (now) {
+    var l = left(now);
+    s.fast = !s.fast;
+    if (running()) s.endsAt = now + l * 1000 / speed();
   });
-  render();
-  setInterval(tick, 200);
+  act("t-mute", function () {
+    s.muted = !s.muted;
+    if (tryout) { unbook(tryout); tryout = null; }
+    // Ring once on unmuting, so you hear what it sounds like and know it's on.
+    if (!s.muted) wake(function () {
+      loadBell().then(function () { if (!s.muted && audioReady()) tryout = ring(ctx.currentTime + 0.05, true); });
+    });
+  });
+
+  // After a reload the browser won't play sound until the next click or key press.
+  ["click", "keydown"].forEach(function (type) {
+    document.addEventListener(type, function () { if (running() && !s.muted && !audioReady()) wake(); }, true);
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && cueLate) { cueLate = false; clearTimeout(cueTimer); cueTimer = setTimeout(uncue, 8000); }
+    tick();
+  });
+  // Another tab with this page open changed the timer.
+  window.addEventListener("storage", function (e) {
+    if (e.key !== KEY) return;
+    var n = restore();
+    if (!n) return;
+    s = n;
+    if (!s.started) uncue();
+    book(); render(Date.now());
+  });
+
+  advance(Date.now(), false);
+  render(Date.now());
+  try { if (running() && navigator.getAutoplayPolicy && navigator.getAutoplayPolicy("audiocontext") === "allowed") wake(); } catch (e) {}
+
+  // Tick from a worker: Chrome slows a hidden tab's own timers to once a minute, which would freeze the title.
+  var fallback = function () { setInterval(tick, 250); };
+  try {
+    var w = new Worker(URL.createObjectURL(new Blob(["setInterval(function(){postMessage(0)},250)"], { type: "text/javascript" })));
+    w.onmessage = tick;
+    w.onerror = function () { w.terminate(); fallback(); };
+  } catch (e) { fallback(); }
 })();
 </script>
 </body>
